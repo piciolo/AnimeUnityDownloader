@@ -12,7 +12,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from gui.main_window import create_window
-from gui.theme import APP_QSS
+from gui.theme import APP_QSS, build_palette
 
 
 def main() -> int:
@@ -20,6 +20,9 @@ def main() -> int:
     app.setApplicationName("AnimeUnity Downloader")
     app.setOrganizationName("AnimeUnityDownloader")
     app.setStyle("Fusion")
+    # Dark palette first so every widget defaults to the dark background, then the
+    # stylesheet layers the accent styling on top.
+    app.setPalette(build_palette())
     app.setStyleSheet(APP_QSS)
 
     # Use the bundled logo as the window/taskbar icon when available.

@@ -1,6 +1,8 @@
-"""Dark theme (Qt style sheet) for the application."""
+"""Dark theme (Qt style sheet + palette) for the application."""
 
 from __future__ import annotations
+
+from PySide6.QtGui import QColor, QPalette
 
 # Palette
 BG = "#12131a"
@@ -112,7 +114,8 @@ QLabel#BadgeDub {{
 }}
 
 /* Tabs */
-QTabWidget::pane {{ border: none; }}
+QTabWidget::pane {{ border: none; background: {BG}; }}
+QStackedWidget, QScrollArea > QWidget > QWidget {{ background: {BG}; }}
 QTabBar::tab {{
     background: transparent;
     color: {TEXT_DIM};
@@ -246,3 +249,29 @@ QToolTip {{
     border-radius: 6px;
 }}
 """
+
+
+def build_palette() -> QPalette:
+    """Return a dark palette so every widget (even unstyled containers, tab pages and
+    scroll viewports) renders on the dark background instead of the light default."""
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(BG))
+    palette.setColor(QPalette.WindowText, QColor(TEXT))
+    palette.setColor(QPalette.Base, QColor(BG_ALT))
+    palette.setColor(QPalette.AlternateBase, QColor(CARD))
+    palette.setColor(QPalette.Text, QColor(TEXT))
+    palette.setColor(QPalette.Button, QColor(BG_ALT))
+    palette.setColor(QPalette.ButtonText, QColor(TEXT))
+    palette.setColor(QPalette.BrightText, QColor("#ffffff"))
+    palette.setColor(QPalette.Highlight, QColor(ACCENT))
+    palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
+    palette.setColor(QPalette.ToolTipBase, QColor(CARD))
+    palette.setColor(QPalette.ToolTipText, QColor(TEXT))
+    palette.setColor(QPalette.PlaceholderText, QColor(TEXT_DIM))
+    palette.setColor(QPalette.Link, QColor(ACCENT))
+
+    disabled = QPalette.Disabled
+    palette.setColor(disabled, QPalette.WindowText, QColor(TEXT_DIM))
+    palette.setColor(disabled, QPalette.Text, QColor(TEXT_DIM))
+    palette.setColor(disabled, QPalette.ButtonText, QColor(TEXT_DIM))
+    return palette
