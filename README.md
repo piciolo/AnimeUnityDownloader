@@ -1,158 +1,114 @@
-# AnimeUnity Downloader
+<p align="center">
+  <img src="assets/logo.png" width="110" alt="AnimeUnity Downloader">
+</p>
 
-> A Python-based tool for downloading anime series from AnimeUnity, featuring progress tracking for each episode. It efficiently extracts video URLs and manages downloads.
+<h1 align="center">AnimeUnity Downloader</h1>
 
-> 🖥️ **Preferisci un'interfaccia grafica?** È disponibile una versione desktop con
-> ricerca, catalogo e coda di download, **senza usare il terminale**.
-> Vedi **[GUIDA_INTERFACCIA.md](GUIDA_INTERFACCIA.md)** (avvio con doppio clic o `.exe`).
+<p align="center">
+  App <b>desktop</b> per cercare e scaricare anime da
+  <a href="https://www.animeunity.so">AnimeUnity</a> — tutto a click,
+  <b>senza terminale e senza comandi Python</b>.
+</p>
 
-![Demo](https://github.com/Lysagxra/AnimeUnityDownloader/blob/8e274bdfb71f8fc714fa02322ec2b3eda61cce53/assets/demo.png)
+---
 
-## Features
+## ✨ Caratteristiche
 
-- Downloads multiple episodes concurrently.
-- Supports [batch downloading](https://github.com/Lysagxra/AnimeUnityDownloader?tab=readme-ov-file#batch-download) via a list of URLs.
-- Supports downloading a [specified range of episodes](https://github.com/Lysagxra/AnimeUnityDownloader?tab=readme-ov-file#single-anime-download).
-- Supports [custom download location](https://github.com/Lysagxra/AnimeUnityDownloader/tree/main?tab=readme-ov-file#file-download-location).
-- Tracks download progress with a progress bar.
-- Automatically creates a directory structure for organized storage.
+- 🔎 **Ricerca** anime per titolo, collegata direttamente al sito.
+- 🔥 **Sfoglia** il catalogo: *Popolari*, *Più visti*, *Migliori*.
+- 🇮🇹 Filtro **DUB (ITA)** per i soli anime doppiati in italiano.
+- 📺 Scheda anime con **trama, copertina e lista episodi**.
+- ✅ Selezione episodi: **singoli**, **tutti** o **intervallo** (es. dal 5 al 12).
+- 📥 **Coda di download** con barra di avanzamento, velocità, download **simultanei**
+  regolabili, **annulla** immediato e **cartella personalizzabile**.
+- 💾 File salvati in modo ordinato: `Nome Anime - Ep 01 [1080p].mp4`.
 
-## Dependencies
+## ⬇️ Installazione e avvio
 
-- Python 3
-- `requests` - for HTTP requests
-- `BeautifulSoup` (bs4) - for HTML parsing
-- `rich` - for progress display in terminal
-- `fake_useragent` - for generating fake user agents for web scraping
-- `httpx` - for making asynchronous HTTP requests
+### Modo più semplice — eseguibile (consigliato)
 
-<details>
+1. Vai alla pagina **[Releases](https://github.com/piciolo/AnimeUnityDownloader/releases/latest)**
+   e scarica il file `.exe`.
+2. **Doppio clic**. Fine: non serve installare Python.
 
-<summary>Show directory structure</summary>
+> Essendo un eseguibile non firmato, Windows SmartScreen potrebbe mostrare un avviso:
+> clicca **Ulteriori informazioni → Esegui comunque**. Al primo avvio l'app impiega
+> qualche secondo a partire.
 
-```
-project-root/
-├── helpers/
-│ ├── crawlers/
-│ │ ├── crawler.py        # Module for crawling tasks
-│ │ └── crawler_utils.py  # Utilities for extracting media download links
-│ ├── config.py           # Manages constants and settings used across the project
-│ ├── download_utils.py   # Utilities for managing the download process
-│ ├── file_utils.py       # Utilities for managing file operations
-│ ├── general_utils.py    # Miscellaneous utility functions
-│ └── progress_utils.py   # Tools for progress tracking and reporting
-├── anime_downloader.py   # Module for downloading anime episodes
-├── main.py               # Main script to run the downloader
-└── URLs.txt              # Text file containing anime URLs
-```
+### Avvio con doppio clic (dal codice, senza creare l'exe)
 
-</details>
+Fai doppio clic su **`Avvia AnimeUnity.bat`** (avvia l'app senza finestra del terminale).
+Richiede Python con le dipendenze installate (vedi sotto).
 
-## Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/Lysagxra/AnimeUnityDownloader.git
-```
-
-2. Navigate to the project directory:
-
-```bash
-cd AnimeUnityDownloader
-```
-
-3. Install the required dependencies:
+### Da sorgente
 
 ```bash
 pip install -r requirements.txt
+python app.py
 ```
 
-## Single Anime Download
+## 🕹️ Come si usa
 
-To download a single anime, you can use the `anime_downloader.py` script.
+1. All'avvio vedi già gli anime **Popolari**.
+2. Scrivi un titolo nella barra e premi **Invio** (o **Cerca**). Puoi cambiare
+   l'ordinamento e attivare **Solo DUB (ITA)**.
+3. Clicca su una copertina per aprire la **scheda dell'anime**.
+4. Spunta gli episodi desiderati. Per fare presto usa **Seleziona tutti** oppure imposta
+   **Dal … al …** e premi **Seleziona intervallo**.
+5. Premi **⬇ Scarica selezionati**: passi automaticamente alla scheda **Download**.
+6. Nella scheda **Download** segui l'avanzamento; puoi **annullare** un download in corso
+   o **rimuovere** quelli finiti, e regolare i download **simultanei**.
 
-### Usage
+## 💾 Dove finiscono i file
 
-Run the script followed by the anime URL you want to download:
+I video vengono salvati nella cartella di download scelta (modificabile dall'app),
+dentro una sottocartella con il nome dell'anime, ad esempio:
+
+```
+<cartella scelta>/
+└── Chainsaw Man/
+    ├── Chainsaw Man - Ep 01 [1080p].mp4
+    └── Chainsaw Man - Ep 02 [1080p].mp4
+```
+
+Riavviando un download già presente, l'episodio viene riconosciuto e saltato.
+
+## 🔨 Creare l'eseguibile
+
+Per generare tu stesso il `.exe` (serve solo la prima volta):
 
 ```bash
-python3 anime_downloader.py <anime_url> [--start <start_episode>] [--end <end_episode>] [--episodes <episode_list>]
+pip install pyinstaller
+python build_exe.py
 ```
 
-- `<anime_url>`: The URL of the anime series.
-- `--start <start_episode>`: The starting episode number (optional).
-- `--end <end_episode>`: The ending episode number (optional).
-- `--episodes <episode_list>`: Comma or space separated list of specific episode numbers to download.
+Al termine trovi **`dist/AnimeUnity Downloader.exe`**: un singolo file portabile,
+lanciabile con un doppio clic anche su PC senza Python.
 
-### Examples
+> Per un'icona personalizzata, metti un file `assets/logo.ico` prima di lanciare
+> `build_exe.py`.
 
-To download all episodes:
-```bash
-python3 anime_downloader.py https://www.animeunity.so/anime/1517-yuru-yuri
-```
+## ⚙️ Come funziona (in breve)
 
-To download a specific range of episodes (e.g., episodes 5 to 10):
-```bash
-python3 anime_downloader.py https://www.animeunity.so/anime/1517-yuru-yuri --start 5 --end 10
-```
+L'app è autonoma (pacchetto `gui/` + `app.py`) e comunica direttamente con AnimeUnity:
 
-To download episodes starting from a specific episode:
-```bash
-python3 anime_downloader.py https://www.animeunity.so/anime/1517-yuru-yuri --start 5
-```
-In this case, the script will download all episodes starting from the `--start` episode to the last episode.
+- ricerca/catalogo tramite l'endpoint `POST /archivio/get-animes` (con token CSRF);
+- lista episodi tramite `info_api`;
+- link diretto al file `.mp4` estratto dalla pagina video dell'episodio.
 
-To download episodes up to a certain episode:
-```bash
-python3 anime_downloader.py https://www.animeunity.so/anime/1517-yuru-yuri --end 10
-```
-In this case, the script will download all episodes starting from the first episode to the `--end` episode.
+I download vengono eseguiti in thread separati per non bloccare l'interfaccia.
 
-To download only specific episodes (e.g., episodes 3, 7, 12, and 15) add the `--episodes` flag and the list of episodes separated by comma or space or both
+## 📦 Requisiti
 
-```bash
-python3 anime_downloader.py https://www.animeunity.so/anime/1517-yuru-yuri --episodes 3,7,12,15
-python3 anime_downloader.py https://www.animeunity.so/anime/1517-yuru-yuri --episodes 3 7 12 15
-```
+- Per l'**eseguibile**: nessuno (Windows 64 bit).
+- Per l'**avvio da sorgente**: Python 3.10+ con `PySide6` e `httpx`
+  (`pip install -r requirements.txt`).
 
-This is useful when you already have some episodes and only need to download the missing ones, avoiding re-downloading an entire range.
+## ⚠️ Note
 
-## Batch Download
+Strumento pensato per **uso personale**. Rispetta le leggi sul diritto d'autore e i
+termini di servizio del sito: scarica solo contenuti per cui hai i relativi diritti.
 
-### Usage
+## 📄 Licenza
 
-1. Create a `URLs.txt` file in the project root and list the anime URLs you want to download.
-
-- Example of `URLs.txt`:
-
-```
-https://www.animeunity.so/anime/1517-yuru-yuri
-https://www.animeunity.so/anime/3871-chainsaw-man
-https://www.animeunity.so/anime/2598-made-in-abyss
-```
-
-- Ensure that each URL is on its own line without any extra spaces.
-- You can add as many URLs as you need, following the same format.
-
-2. Run the main script via the command line:
-
-```bash
-python3 main.py
-```
-
-## File Download Location
-
-If the `--custom-path <custom_path>` argument is used, the downloaded files will be saved in `<custom_path>/Downloads`. Otherwise, the files will be saved in a `Downloads` folder created within the script's directory
-
-### Usage
-
-```bash
-python3 main.py --custom-path <custom_path>
-```
-
-### Example
-
-```bash
-python3 main.py --custom-path /path/to/external/drive
-```
+Distribuito secondo i termini indicati nel file [LICENSE](LICENSE).

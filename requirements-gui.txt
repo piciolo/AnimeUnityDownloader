@@ -1,4 +1,0 @@
-# Dependencies for the desktop GUI (app.py).
-# The GUI is self-contained and only needs these two packages at runtime.
-PySide6==6.9.2
-httpx==0.28.1
