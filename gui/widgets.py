@@ -19,9 +19,11 @@ from .models import Anime
 from .net import AnimeUnityClient
 from .workers import PosterWorker
 
-CARD_WIDTH = 176
 POSTER_W = 176
 POSTER_H = 248
+# Card must be wider than the poster by its left+right margins (8 + 8), otherwise the
+# fixed-size poster overflows the content area and paints over the hover border.
+CARD_WIDTH = POSTER_W + 16
 
 
 def human_size(num_bytes: float) -> str:
