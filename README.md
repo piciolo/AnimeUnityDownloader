@@ -10,6 +10,10 @@
   <b>senza terminale e senza comandi Python</b>.
 </p>
 
+<p align="center">
+  <sub><i>A desktop GUI to search, browse and download anime episodes from AnimeUnity — no command line, Windows <code>.exe</code> included.</i></sub>
+</p>
+
 ---
 
 ## 📸 Anteprima

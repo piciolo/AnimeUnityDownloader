@@ -1,0 +1,9 @@
+# GitHub Pages configuration.
+# Renders README.md as a themed project page at
+# https://piciolo.github.io/AnimeUnityDownloader/
+title: AnimeUnity Downloader
+description: >-
+  Downloader desktop con interfaccia grafica per AnimeUnity: cerca, sfoglia e
+  scarica episodi anime senza terminale. A desktop GUI to download anime from
+  AnimeUnity (Windows .exe included).
+theme: jekyll-theme-cayman
