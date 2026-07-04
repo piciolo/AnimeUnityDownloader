@@ -12,6 +12,18 @@
 
 ---
 
+## 📸 Anteprima
+
+<p align="center">
+  <img src="assets/screenshot-catalogo.png" width="100%" alt="Catalogo e ricerca">
+</p>
+
+<p align="center">
+  <img src="assets/screenshot-episodi.png" width="49%" alt="Scheda anime con lista episodi">
+  &nbsp;
+  <img src="assets/screenshot-download.png" width="49%" alt="Coda di download con avanzamento">
+</p>
+
 ## ✨ Caratteristiche
 
 - 🔎 **Ricerca** anime per titolo, collegata direttamente al sito.
