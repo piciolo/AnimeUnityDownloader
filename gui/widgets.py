@@ -24,6 +24,14 @@ POSTER_H = 248
 # Card must be wider than the poster by its left+right margins (8 + 8), otherwise the
 # fixed-size poster overflows the content area and paints over the hover border.
 CARD_WIDTH = POSTER_W + 16
+# Every inner element has a fixed height and so does the card, so all cards are
+# identical and no leftover vertical space can stretch the badges/meta rows.
+BADGE_H = 22
+META_H = 20
+TITLE_H = 38
+# Fixed card height: margins + poster + title + badges + meta + a small cushion that
+# the trailing stretch absorbs, so content never clips and cards stay identical.
+CARD_HEIGHT = 8 + POSTER_H + 8 + TITLE_H + 8 + BADGE_H + 8 + META_H + 10 + 12  # = 382
 
 
 def human_size(num_bytes: float) -> str:
@@ -42,6 +50,7 @@ def _badge(text: str, object_name: str = "Badge") -> QLabel:
     label = QLabel(text)
     label.setObjectName(object_name)
     label.setAlignment(Qt.AlignCenter)
+    label.setFixedHeight(BADGE_H)
     return label
 
 
@@ -60,7 +69,7 @@ class AnimeCard(QFrame):
         self._pool = pool
 
         self.setObjectName("Card")
-        self.setFixedWidth(CARD_WIDTH)
+        self.setFixedSize(CARD_WIDTH, CARD_HEIGHT)
         self.setCursor(Qt.PointingHandCursor)
 
         layout = QVBoxLayout(self)
@@ -80,7 +89,7 @@ class AnimeCard(QFrame):
         title = QLabel(anime.title)
         title.setObjectName("CardTitle")
         title.setWordWrap(True)
-        title.setFixedHeight(38)
+        title.setFixedHeight(TITLE_H)
         title.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         layout.addWidget(title)
 
@@ -97,7 +106,9 @@ class AnimeCard(QFrame):
 
         meta = QLabel(f"{anime.episodes_count} ep · ⭐ {anime.score or '–'}")
         meta.setObjectName("Muted")
+        meta.setFixedHeight(META_H)
         layout.addWidget(meta)
+        layout.addStretch(1)  # absorb any slack at the bottom, never in the badges row
 
         self.setToolTip(anime.title)
         self._load_poster()
