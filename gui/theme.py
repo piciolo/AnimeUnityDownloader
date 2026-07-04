@@ -86,6 +86,16 @@ QPushButton#Primary:disabled {{ background: {BORDER}; color: {TEXT_DIM}; }}
 QPushButton#Ghost {{ background: transparent; border: 1px solid {BORDER}; }}
 QPushButton#Ghost:hover {{ border-color: {ACCENT}; }}
 
+QPushButton#BackButton {{
+    background: {CARD};
+    border: 1px solid {ACCENT};
+    color: {ACCENT_HOVER};
+    padding: 8px 18px;
+    font-weight: 700;
+}}
+QPushButton#BackButton:hover {{ background: {ACCENT}; color: white; border-color: {ACCENT}; }}
+QPushButton#BackButton:pressed {{ background: {ACCENT_PRESSED}; }}
+
 QPushButton#Danger:hover {{ border-color: {BAD}; color: {BAD}; }}
 
 /* Cards */

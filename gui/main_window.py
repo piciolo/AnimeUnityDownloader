@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThreadPool
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QKeySequence, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -94,6 +94,22 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self._build_catalog_tab(), "Catalogo")
         self.tabs.addTab(self._build_downloads_tab(), "Download")
         layout.addWidget(self.tabs, 1)
+
+        # Press Esc to go back from an anime detail to the results.
+        QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._go_back)
+
+    def _go_back(self) -> None:
+        """Return from the anime detail view to the results grid."""
+        if self.tabs.currentIndex() == 0 and self.catalog_stack.currentIndex() == 1:
+            self.catalog_stack.setCurrentIndex(0)
+
+    def mousePressEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        # Support the mouse "back" button (side button) as a back action.
+        if event.button() == Qt.BackButton:
+            self._go_back()
+            event.accept()
+            return
+        super().mousePressEvent(event)
 
     def _build_header(self) -> QVBoxLayout:
         box = QVBoxLayout()
@@ -189,11 +205,17 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 6, 0, 0)
         layout.setSpacing(14)
 
-        back = QPushButton("←  Torna ai risultati")
-        back.setObjectName("Ghost")
-        back.setFixedWidth(190)
-        back.clicked.connect(lambda: self.catalog_stack.setCurrentIndex(0))
-        layout.addWidget(back)
+        back = QPushButton("←  Indietro")
+        back.setObjectName("BackButton")
+        back.setCursor(Qt.PointingHandCursor)
+        back.setFixedHeight(38)
+        back.setMinimumWidth(150)
+        back.setToolTip("Torna ai risultati (Esc)")
+        back.clicked.connect(self._go_back)
+        back_row = QHBoxLayout()
+        back_row.addWidget(back)
+        back_row.addStretch(1)
+        layout.addLayout(back_row)
 
         header = QHBoxLayout()
         header.setSpacing(18)
