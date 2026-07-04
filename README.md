@@ -21,6 +21,9 @@
 - ✅ Selezione episodi: **singoli**, **tutti** o **intervallo** (es. dal 5 al 12).
 - 📥 **Coda di download** con barra di avanzamento, velocità, download **simultanei**
   regolabili, **annulla** immediato e **cartella personalizzabile**.
+- ⏯️ **Ripresa dei download interrotti**: se un download viene interrotto, riparte da
+  dove si era fermato invece che da capo. Nella lista episodi vedi quali sono già
+  scaricati (✓) e quali sono da completare (⏸).
 - 💾 File salvati in modo ordinato: `Nome Anime - Ep 01 [1080p].mp4`.
 
 ## ⬇️ Installazione e avvio
