@@ -229,34 +229,55 @@ class AnimeUnityClient:
         should_cancel: Callable[[], bool] | None = None,
         on_response: Callable[[object], None] | None = None,
     ) -> None:
-        """Stream a file to ``dest_path`` while reporting progress.
+        """Stream a file to ``dest_path`` while reporting progress, resuming if possible.
 
-        ``progress`` receives ``(downloaded_bytes, total_bytes)``; ``total_bytes`` is
-        ``-1`` when unknown. Raises :class:`DownloadCancelled` if ``should_cancel``
-        returns ``True`` mid-stream (the partial file is removed). ``on_response`` is
-        called with the live streaming response so the caller can close it to interrupt
-        a stalled read promptly.
+        If a ``.part`` file from a previous interrupted attempt exists, the download
+        resumes from where it stopped via an HTTP ``Range`` request (falling back to a
+        clean restart if the server ignores it). ``progress`` receives
+        ``(downloaded_bytes, total_bytes)`` where ``downloaded_bytes`` is cumulative
+        (including already-present bytes) and ``total_bytes`` is ``-1`` when unknown.
+
+        On cancellation (:class:`DownloadCancelled`) or error the ``.part`` file is
+        **kept** so the next attempt can resume it. ``on_response`` receives the live
+        streaming response so the caller can close it to interrupt a stalled read.
         """
         dest_path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = dest_path.with_suffix(dest_path.suffix + ".part")
-        downloaded = 0
+        timeout = httpx.Timeout(connect=15.0, read=20.0, write=20.0, pool=15.0)
 
-        try:
+        # Two passes at most: the second only happens if a stale partial forced a clean
+        # restart (HTTP 416 Range Not Satisfiable).
+        for allow_restart in (True, False):
+            existing = tmp_path.stat().st_size if tmp_path.exists() else 0
+            headers = {"User-Agent": _FIREFOX_UA}
+            if existing > 0:
+                headers["Range"] = f"bytes={existing}-"
+
             with self._client.stream(
-                "GET",
-                url,
-                headers={"User-Agent": _FIREFOX_UA},
-                # Shorter read timeout so a stalled connection surfaces quickly.
-                timeout=httpx.Timeout(connect=15.0, read=20.0, write=20.0, pool=15.0),
+                "GET", url, headers=headers, timeout=timeout,
             ) as response:
                 if on_response is not None:
                     on_response(response)
+
+                if response.status_code == 416 and existing > 0 and allow_restart:
+                    # Our partial is stale / already >= the file size: discard & restart.
+                    tmp_path.unlink(missing_ok=True)
+                    continue
+
                 response.raise_for_status()
-                try:
-                    total = int(response.headers.get("Content-Length", -1))
-                except (TypeError, ValueError):
-                    total = -1
-                with tmp_path.open("wb") as handle:
+
+                resuming = existing > 0 and response.status_code == 206
+                if resuming:
+                    total = _content_range_total(response.headers)
+                    if total is None:
+                        remaining = _to_int(response.headers.get("Content-Length"))
+                        total = existing + remaining if remaining is not None else -1
+                    mode, downloaded = "ab", existing
+                else:
+                    total = _to_int(response.headers.get("Content-Length"), -1)
+                    mode, downloaded = "wb", 0
+
+                with tmp_path.open(mode) as handle:
                     for chunk in response.iter_bytes(chunk_size=1024 * 256):
                         if should_cancel and should_cancel():
                             raise DownloadCancelled
@@ -266,12 +287,7 @@ class AnimeUnityClient:
                         downloaded += len(chunk)
                         if progress:
                             progress(downloaded, total)
-        except DownloadCancelled:
-            tmp_path.unlink(missing_ok=True)
-            raise
-        except Exception:
-            tmp_path.unlink(missing_ok=True)
-            raise
+            break
 
         tmp_path.replace(dest_path)
 
@@ -279,6 +295,32 @@ class AnimeUnityClient:
     def close(self) -> None:
         """Close the underlying HTTP client."""
         self._client.close()
+
+
+def _to_int(value: object, default: int | None = None) -> int | None:
+    """Parse an int, returning ``default`` on any failure."""
+    try:
+        return int(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return default
+
+
+def _content_range_total(headers: object) -> int | None:
+    """Extract the total size from a ``Content-Range: bytes a-b/total`` header."""
+    content_range = headers.get("Content-Range", "") if headers else ""
+    if "/" in content_range:
+        return _to_int(content_range.rsplit("/", 1)[-1].strip())
+    return None
+
+
+def episode_label(episode: "object") -> str:
+    """Return the episode label used in filenames (zero-padded, or ``idN`` fallback)."""
+    number = getattr(episode, "number", "") or ""
+    if number.isdigit():
+        return f"{int(number):02d}"
+    if number:
+        return number
+    return f"id{getattr(episode, 'id', '')}"
 
 
 def build_filename(anime_title: str, episode: "object", download_url: str) -> str:
@@ -289,7 +331,6 @@ def build_filename(anime_title: str, episode: "object", download_url: str) -> st
     the real name), otherwise from the URL path. A ``[quality]`` tag is only added when
     the token actually looks like a resolution (e.g. ``1080p``).
     """
-    number = getattr(episode, "number", "") or ""
     parsed = urlparse(download_url)
 
     # Prefer a real filename carried in the query string; fall back to the path name.
@@ -307,13 +348,32 @@ def build_filename(anime_title: str, episode: "object", download_url: str) -> st
     token = Path(candidate).stem
     quality_tag = f" [{token}]" if _QUALITY_PATTERN.match(token or "") else ""
 
-    # Zero-pad plain integer episode numbers; fall back to a unique id for specials
-    # that carry no episode number (so they never collide on the same filename).
-    label = number
-    if number.isdigit():
-        label = f"{int(number):02d}"
-    if not label:
-        label = f"id{getattr(episode, 'id', '')}"
-
-    base = f"{sanitize_name(anime_title)} - Ep {label}{quality_tag}"
+    base = f"{sanitize_name(anime_title)} - Ep {episode_label(episode)}{quality_tag}"
     return sanitize_name(base) + ext
+
+
+def episode_status(
+    existing_names: list[str], anime_title: str, episode: "object",
+) -> str | None:
+    """Return ``"complete"``, ``"partial"`` or ``None`` for an episode.
+
+    Detection is filename-based (independent of the quality tag): a file is matched when
+    it starts with ``"<title> - Ep <label>"`` followed by a space or dot, so ``Ep 10``
+    never matches ``Ep 100``.
+    """
+    prefix = f"{sanitize_name(anime_title)} - Ep {episode_label(episode)}"
+
+    def has(suffix: str) -> bool:
+        return any(
+            name.startswith(prefix)
+            and name.endswith(suffix)
+            and len(name) > len(prefix)
+            and name[len(prefix)] in (" ", ".")
+            for name in existing_names
+        )
+
+    if has(".mp4"):
+        return "complete"
+    if has(".mp4.part"):
+        return "partial"
+    return None

@@ -16,6 +16,7 @@ ACCENT = "#7c5cff"
 ACCENT_HOVER = "#9179ff"
 ACCENT_PRESSED = "#6a4de0"
 GOOD = "#3ecf8e"
+WARN = "#f5b74d"
 BAD = "#ff5c72"
 
 APP_QSS = f"""

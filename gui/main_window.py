@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThreadPool
-from PySide6.QtGui import QKeySequence, QPixmap, QShortcut
+from PySide6.QtGui import QColor, QKeySequence, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -29,9 +29,9 @@ from PySide6.QtWidgets import (
 
 from .flowlayout import FlowLayout
 from .models import Anime, Episode
-from .net import ORDER_OPTIONS, AnimeUnityClient, sanitize_name
+from .net import ORDER_OPTIONS, AnimeUnityClient, episode_status, sanitize_name
 from .settings import MAX_CONCURRENCY, AppSettings
-from .theme import APP_QSS
+from .theme import APP_QSS, GOOD, WARN
 from .widgets import AnimeCard, DownloadRow
 from .workers import DownloadTask, EpisodesWorker, PosterWorker, SearchWorker
 
@@ -481,14 +481,44 @@ class MainWindow(QMainWindow):
     def _on_episodes_results(self, api_id: object, episodes: list) -> None:
         if not self._detail_anime or api_id != self._detail_anime.api_id:
             return
+
+        # Look at what is already on disk so completed/incomplete episodes are marked.
+        folder = Path(self.settings.download_dir) / sanitize_name(
+            self._detail_anime.title
+        )
+        try:
+            existing_names = [p.name for p in folder.iterdir()] if folder.is_dir() else []
+        except OSError:
+            existing_names = []
+
         self.episode_list.clear()
+        done = incomplete = 0
         for episode in episodes:
-            item = QListWidgetItem(episode.number_label)
+            status = episode_status(existing_names, self._detail_anime.title, episode)
+            text = episode.number_label
+            item = QListWidgetItem(text)
+            if status == "complete":
+                item.setText(f"{text}     ✓ scaricato")
+                item.setForeground(QColor(GOOD))
+                done += 1
+            elif status == "partial":
+                item.setText(f"{text}     ⏸ incompleto — riprendi")
+                item.setForeground(QColor(WARN))
+                incomplete += 1
             item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
             item.setCheckState(Qt.Unchecked)
             item.setData(Qt.UserRole, episode)
             self.episode_list.addItem(item)
-        self.episodes_status.setText(f"{len(episodes)} episodi disponibili")
+
+        summary = f"{len(episodes)} episodi disponibili"
+        extra = []
+        if done:
+            extra.append(f"{done} già scaricati")
+        if incomplete:
+            extra.append(f"{incomplete} da completare")
+        if extra:
+            summary += "  ·  " + ", ".join(extra)
+        self.episodes_status.setText(summary)
         self.download_button.setEnabled(bool(episodes))
 
     def _on_episodes_error(self, api_id: object, message: str) -> None:

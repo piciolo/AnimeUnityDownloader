@@ -131,6 +131,7 @@ class DownloadTask(QRunnable):
         self.signals = DownloadSignals()
         self._cancel = threading.Event()
         self._response = None
+        self._base: int | None = None
         self._last_emit = 0.0
         self._start_time = 0.0
 
@@ -154,6 +155,10 @@ class DownloadTask(QRunnable):
 
     def _on_progress(self, downloaded: int, total: int) -> None:
         now = time.monotonic()
+        # On a resumed download the first callback already includes the bytes that were
+        # present on disk; use them as the baseline so the speed reflects this session.
+        if self._base is None:
+            self._base = downloaded
         # Throttle UI updates to ~12 per second. Always emit the final chunk, but only
         # when the total is known (otherwise the guard must still throttle).
         is_final = total > 0 and downloaded >= total
@@ -161,7 +166,7 @@ class DownloadTask(QRunnable):
             return
         self._last_emit = now
         elapsed = max(now - self._start_time, 1e-6)
-        speed = downloaded / elapsed
+        speed = max(downloaded - self._base, 0) / elapsed
         self.signals.progress.emit(self.task_id, downloaded, total, speed)
 
     def run(self) -> None:
@@ -179,7 +184,12 @@ class DownloadTask(QRunnable):
                 self.signals.finished.emit(self.task_id, True, "Già presente")
                 return
 
-            self.signals.status.emit(self.task_id, "Download…")
+            # Resuming when a leftover partial file exists.
+            partial = dest_path.with_suffix(dest_path.suffix + ".part")
+            resuming = partial.exists() and partial.stat().st_size > 0
+            self.signals.status.emit(
+                self.task_id, "Ripresa…" if resuming else "Download…"
+            )
             self._start_time = time.monotonic()
             self.client.download_file(
                 download_url,
