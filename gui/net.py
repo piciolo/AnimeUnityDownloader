@@ -23,7 +23,7 @@ _STALE_TOKEN_CODES = {403, 419}
 # Recognises a resolution token such as "1080p" or "720p".
 _QUALITY_PATTERN = re.compile(r"^\d{3,4}p$", re.IGNORECASE)
 
-DEFAULT_BASE_URL = "https://www.animeunity.so"
+DEFAULT_BASE_URL = "https://www.animeunity.co"
 
 # Regex used to pull the direct download link out of the video page scripts.
 DOWNLOAD_LINK_PATTERN = re.compile(r"window\.downloadUrl\s*=\s*'(https?://[^\s']+)'")
