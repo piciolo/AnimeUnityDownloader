@@ -6,7 +6,7 @@
 
 <p align="center">
   App <b>desktop</b> per cercare e scaricare anime da
-  <a href="https://www.animeunity.so">AnimeUnity</a> — tutto a click,
+  <a href="https://www.animeunity.co">AnimeUnity</a> — tutto a click,
   <b>senza terminale e senza comandi Python</b>.
 </p>
 
