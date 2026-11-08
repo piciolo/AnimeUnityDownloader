@@ -1,3 +1,39 @@
+<h2 align="center">⚠️ Progetto unificato — questo repository è in sola lettura</h2>
+
+<p align="center">
+  Questa app è stata <b>unita</b> a quella per AnimeSaturn.<br>
+  Ora <b>un programma solo gestisce entrambi i portali</b>: all'avvio scegli da quale
+  guardare, e la scelta si cambia quando vuoi.
+</p>
+
+<p align="center">
+  <a href="https://github.com/piciolo/AnimeSaturn-AnimeUnity-Downloader">
+    <img src="https://img.shields.io/badge/👉%20Vai%20al%20progetto%20unificato-7C5CFF?style=for-the-badge" alt="Vai al progetto unificato">
+  </a>
+</p>
+
+<p align="center">
+  <sub>
+    Là c'è tutto quello che c'era qui, e inoltre: streaming dentro l'app,
+    <i>continua a guardare</i>, preferiti, libreria offline, sincronizzazione col
+    telefono — e il <b>recupero automatico del dominio</b> quando AnimeUnity trasloca,
+    cioè proprio il guasto che aveva fermato quest'app
+    (<a href="https://github.com/piciolo/AnimeUnityDownloader/issues/2">#2</a>).<br>
+    Esiste anche la
+    <a href="https://github.com/piciolo/animesaturn-apk-">versione per Android e Android TV</a>.
+  </sub>
+</p>
+
+<p align="center">
+  <sub>
+    Questo repository resta pubblico e scaricabile, con i suoi rilasci e la sua storia,
+    ma <b>non riceverà altri aggiornamenti</b>. Tutto quello che segue descrive l'ultima
+    versione pubblicata qui.
+  </sub>
+</p>
+
+---
+
 <p align="center">
   <img src="assets/logo.png" width="110" alt="AnimeUnity Downloader">
 </p>
